@@ -1,12 +1,12 @@
 ---
-import { getCollection } from 'astro:content';
+import {getCollection} from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import SocialLinks from '../../components/SocialLinks.astro';
 import BlogPostPreview from '../../components/BlogPostPreview.astro';
-import { defaultLang, getDictionary, languages, type Lang } from '../../i18n/ui';
+import {defaultLang, getDictionary, languages, type Lang} from '../../i18n/ui';
 
 export async function getStaticPaths() {
-	return Object.keys(languages).map((lang) => ({ params: { lang } }));
+    return Object.keys(languages).map((lang) => ({params: {lang}}));
 }
 
 const avatarUrl = 'https://avatars.githubusercontent.com/u/11788389?v=4';
@@ -14,62 +14,155 @@ const avatarUrl = 'https://avatars.githubusercontent.com/u/11788389?v=4';
 const lang = (Astro.params.lang ?? defaultLang) as Lang;
 const dictionary = getDictionary(lang);
 
-const allBlogPosts = await getCollection('blog', ({ data }) => {
-	return !data.draft && data.lang === lang;
+const localizedCopy = {
+    en: {
+        location: 'Puerto Rico',
+        tagline: 'Calm interfaces, intentional engineering, and reliable delivery.',
+        ctaPrimary: 'Start a project',
+        ctaSecondary: 'Latest articles',
+        focusTitle: 'Now shaping',
+        statusBody: 'I have worked on web projects with founders and teams in 🇵🇷 🇺🇸 🇩🇴',
+        statusChips: [
+            'Async-first',
+            'Spanish / English'
+        ],
+    },
+    es: {
+        location: 'Puerto Rico',
+        tagline: 'Interfaces serenas, ingeniería intencional y entregas confiables.',
+        ctaPrimary: 'Inicia un proyecto',
+        ctaSecondary: 'Últimos artículos',
+        focusTitle: 'Actualmente enfocado en',
+        statusBody: 'Colaborando con equipos remotos en 🇵🇷 + 🇺🇸 para lanzar experiencias web accesibles.',
+        statusChips: ['Trabajo asíncrono', 'Español / Inglés'],
+    },
+} satisfies Record<
+    Lang,
+    {
+        location: string;
+        tagline: string;
+        ctaPrimary: string;
+        ctaSecondary: string;
+        focusTitle: string;
+        statusBody: string;
+        statusChips: string[];
+    }>;
+
+const statsMap = {
+    en: [
+        {label: 'Years building for the web', value: '10+'},
+        {label: 'Products launched', value: '35'},
+        {label: 'Time zone', value: 'AST (-4)'},
+    ],
+    es: [
+        {label: 'Años creando para la web', value: '10+'},
+        {label: 'Productos lanzados', value: '35'},
+        {label: 'Zona horaria', value: 'AST (-4)'},
+    ],
+} satisfies Record<Lang, { label: string; value: string }[]>;
+
+const {
+    location,
+    tagline,
+    ctaPrimary,
+    ctaSecondary,
+    statusBody,
+    statusChips,
+} = localizedCopy[lang];
+const stats = statsMap[lang];
+
+const allBlogPosts = await getCollection('blog', ({data}) => {
+    return !data.draft && data.lang === lang;
 });
 
 const latestPosts = allBlogPosts
-	.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-	.slice(0, 3);
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+    .slice(0, 3);
 
 const alternateLinks = Object.fromEntries(
-	Object.keys(languages).map((code) => [code, `/${code}/`])
+    Object.keys(languages).map((code) => [code, `/${code}/`])
 );
 ---
 
 <Layout lang={lang} alternateLinks={alternateLinks}>
-	<main class="min-h-screen py-12">
-		<div class="mx-auto flex max-w-4xl flex-col gap-16 px-4">
-			<section class="flex flex-col items-start gap-8 md:flex-row">
-				<div class="avatar">
-					<div class="w-32 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-2">
-						<img src={avatarUrl} alt={dictionary.heroName} />
-					</div>
-				</div>
-				<div class="flex-1">
-					<h1 class="mb-4 text-4xl font-bold">{dictionary.heroName}</h1>
-					<p class="mb-4 text-xl text-base-content/80">{dictionary.heroRole}</p>
-					<p class="mb-6 leading-relaxed text-base-content/70">{dictionary.heroBio}</p>
-					<SocialLinks />
-				</div>
-			</section>
+    <main class="py-6 sm:py-10">
+        <div class="mx-auto flex max-w-5xl flex-col gap-12">
+            <section class="grid gap-8">
+                <div class="mt-6 flex flex-col">
+                    <div class="flex items-center gap-4">
+                        <div class="avatar">
+                            <div class="w-24 rounded-full overflow-hidden">
+                                <img src={avatarUrl} alt={dictionary.heroName} loading="lazy"/>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-4xl font-bold leading-tight sm:text-5xl">{dictionary.heroName}</h1>
+                            <p class="text-base text-base-content/70">{location}</p>
+                        </div>
+                    </div>
+                    <p class="text-lg text-base-content/80 mt-6">{tagline}</p>
+                    <p class="text-base text-base-content/70 mt-6">{dictionary.heroBio}</p>
+                    <p class="text-lg text-base-content/80 mt-4">{statusBody}</p>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        {statusChips.map((chip) => (
+                                <span class="badge badge-primary badge-soft"
+                                      data-chip={chip}>
+									{chip}
+								</span>
+                        ))}
+                    </div>
+                    <div class="flex flex-wrap gap-3 my-6">
+                        <a
+                                href="mailto:gerardo@gerardobaez.com"
+                                class="btn btn-primary"
+                        >
+                            {ctaPrimary}
+                        </a>
+                        <a
+                                href={`/${lang}/blog/`}
+                                class="btn btn-link text-base-content/80 hover:text-base-content/90"
+                        >
+                            {ctaSecondary}
+                        </a>
+                    </div>
+                    <SocialLinks/>
+                </div>
+            </section>
 
-			<section>
-				<div class="mb-6 flex items-center justify-between gap-4">
-					<h2 class="text-2xl font-bold">{dictionary.latestPosts}</h2>
-					{latestPosts.length > 0 && (
-						<a href={`/${lang}/blog/`} class="link link-hover text-sm">
-							{dictionary.viewAll}
-						</a>
-					)}
-				</div>
-				<div class="space-y-4">
-					{latestPosts.length > 0 ? (
-						latestPosts.map((post) => (
-							<BlogPostPreview
-								title={post.data.title}
-								excerpt={post.data.description}
-								date={post.data.pubDate}
-								href={`/${lang}/blog/${post.data.urlSlug}/`}
-								locale={lang}
-							/>
-						))
-					) : (
-						<p class="italic text-base-content/60">{dictionary.emptyLatest}</p>
-					)}
-				</div>
-			</section>
-		</div>
-	</main>
+            <section>
+                <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-semibold">{dictionary.latestPosts}</h2>
+                    </div>
+                    {latestPosts.length > 0 && (
+                            <a
+                                    href={`/${lang}/blog/`}
+                                    class="text-sm text-base-content/80 underline-offset-4 hover:underline"
+                            >
+                                {dictionary.viewAll}
+                            </a>
+                    )}
+                </div>
+                {latestPosts.length > 0 ? (
+                        <div class="grid gap-6 md:grid-cols-2">
+                            {latestPosts.map((post) => (
+                                    <BlogPostPreview
+                                            title={post.data.title}
+                                            excerpt={post.data.description}
+                                            date={post.data.pubDate}
+                                            href={`/${lang}/blog/${post.data.urlSlug}/`}
+                                            locale={lang}
+                                            ctaL¬abel={dictionary.readMore}
+                                    />
+                            ))}
+                        </div>
+                ) : (
+                        <div class="card-accent p-6 text-base-content/70">
+                            <p class="italic">{dictionary.emptyLatest}</p>
+                        </div>
+                )}
+            </section>
+        </div>
+    </main>
 </Layout>
 

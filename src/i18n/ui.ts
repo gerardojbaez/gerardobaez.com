@@ -73,3 +73,4 @@ export function getDictionary(lang: string | undefined) {
 	return ui[lang as Lang];
 }
 
+

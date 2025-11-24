@@ -1,20 +1,20 @@
 ---
 import '../styles/global.css';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
-import { defaultLang, getDictionary, languages, type Lang } from '../i18n/ui';
+import {defaultLang, getDictionary, languages, type Lang} from '../i18n/ui';
 
 interface Props {
-	title?: string;
-	description?: string;
-	lang?: Lang;
-	alternateLinks?: Record<string, string>;
+    title?: string;
+    description?: string;
+    lang?: Lang;
+    alternateLinks?: Record<string, string>;
 }
 
 const {
-	title: providedTitle,
-	description: providedDescription,
-	lang: langProp,
-	alternateLinks = {},
+    title: providedTitle,
+    description: providedDescription,
+    lang: langProp,
+    alternateLinks = {},
 } = Astro.props as Props;
 
 const lang = langProp ?? defaultLang;
@@ -22,41 +22,64 @@ const dictionary = getDictionary(lang);
 
 const title = providedTitle ?? dictionary.siteTitle;
 const description = providedDescription ?? dictionary.siteDescription;
+const currentYear = new Date().getFullYear();
 
 const normalizedLinks = Object.fromEntries(
-	Object.keys(languages).map((code) => {
-		if (alternateLinks[code]) {
-			return [code, alternateLinks[code]];
-		}
+    Object.keys(languages).map((code) => {
+        if (alternateLinks[code]) {
+            return [code, alternateLinks[code]];
+        }
 
-		if (code === lang) {
-			return [code, Astro.url.pathname];
-		}
+        if (code === lang) {
+            return [code, Astro.url.pathname];
+        }
 
-		return [code, `/${code}/`];
-	})
+        return [code, `/${code}/`];
+    })
 );
 ---
 
 <!doctype html>
 <html lang={lang}>
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
-		<title>{title}</title>
-	</head>
-	<body class="bg-base-100 text-base-content">
-		<header class="border-b border-base-200">
-			<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-				<a href={`/${lang}/`} class="text-sm font-semibold tracking-tight">
-					{dictionary.heroName}
-				</a>
-				<LanguageSwitcher currentLang={lang} alternateLinks={normalizedLinks} />
-			</div>
-		</header>
-		<slot />
-	</body>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <meta name="generator" content={Astro.generator}/>
+    <meta name="description" content={description}/>
+    <title>{title}</title>
+</head>
+<body class="bg-base-200 text-base-content antialiased">
+<div class="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+    <header class="mx-auto mb-8 w-full max-w-5xl py-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <a href={`/${lang}/`} class="flex flex-col">
+                        <span class="text-xs uppercase text-base-content/60 tracking-widest">
+                            {dictionary.heroRole}
+                        </span>
+                <span class="text-lg font-semibold">{dictionary.heroName}</span>
+            </a>
+            <nav class="flex flex-wrap items-center gap-4 text-sm">
+                <a
+                        href={`/${lang}/blog/`}
+                        class="text-base-content/80 hover:text-base-content underline-offset-4 hover:underline"
+                >
+                    Blog
+                </a>
+                <div class="rounded-full border border-base-200/70 bg-base-100 px-2">
+                    <LanguageSwitcher currentLang={lang} alternateLinks={normalizedLinks}/>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <div class="flex-1">
+        <slot/>
+    </div>
+    <footer class="mx-auto mt-12 w-full max-w-5xl border-t border-base-200/60 pt-6 text-sm text-base-content/70">
+        <p>
+            © {currentYear} {dictionary.heroName}. Built with Astro & daisyUI. Stay curious.
+        </p>
+    </footer>
+</div>
+</body>
 </html>

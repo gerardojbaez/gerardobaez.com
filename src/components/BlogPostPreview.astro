@@ -5,9 +5,10 @@ interface Props {
 	date?: Date | string;
 	href: string;
 	locale?: string;
+	ctaLabel?: string;
 }
 
-const { title, excerpt, date, href, locale = 'en' } = Astro.props;
+const { title, excerpt, date, href, locale = 'en', ctaLabel = 'Read more' } = Astro.props;
 
 const formatDate = (value: Date | string | undefined) => {
 	if (!value) return '';
@@ -18,22 +19,31 @@ const formatDate = (value: Date | string | undefined) => {
 		day: 'numeric',
 	}).format(parsed);
 };
+
+const formattedDate = formatDate(date);
 ---
 
-<article class="card card-border">
-	<div class="card-body">
-		<h2 class="card-title">
-			<a href={href} class="link link-hover">
-				{title}
-			</a>
-		</h2>
-		{excerpt && <p>{excerpt}</p>}
-		{date && (
-			<div class="card-actions">
-				<span class="text-sm text-base-content/60">{formatDate(date)}</span>
-			</div>
-		)}
-	</div>
+<article class="group bg-base-100 flex flex-col gap-3 rounded-lg border border-base-200/60 p-5 transition-colors hover:border-base-300">
+    <div class="flex items-center gap-3 text-sm font-semibold text-base-content/60">
+        <span class="inline-flex h-2 w-2 rounded-full bg-base-content/40"></span>
+        <span>{formattedDate || 'Fresh take'}</span>
+    </div>
+    <h3 class="text-2xl font-semibold leading-snug text-base-content">
+        <a href={href} class="underline-offset-4 hover:underline">
+            {title}
+        </a>
+    </h3>
+    {excerpt && <p class="text-base text-base-content/70">{excerpt}</p>}
+    <div class="mt-auto">
+        <a
+            href={href}
+            class="inline-flex items-center gap-2 text-base-content/80 underline-offset-4 hover:text-base-content hover:underline"
+            aria-label={`${ctaLabel} - ${title}`}
+        >
+            {ctaLabel}
+            <span aria-hidden="true">↗</span>
+        </a>
+    </div>
 </article>
 
 
