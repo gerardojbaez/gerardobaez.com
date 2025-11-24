@@ -1,0 +1,33 @@
+---
+interface Props {
+	title: string;
+	excerpt?: string;
+	date?: Date | string;
+	slug: string;
+}
+
+const { title, excerpt, date, slug } = Astro.props;
+
+const formatDate = (date: Date | string | undefined) => {
+	if (!date) return '';
+	const d = typeof date === 'string' ? new Date(date) : date;
+	return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+---
+
+<article class="card card-border">
+	<div class="card-body">
+		<h2 class="card-title">
+			<a href={`/blog/${slug}`} class="link link-hover">
+				{title}
+			</a>
+		</h2>
+		{excerpt && <p>{excerpt}</p>}
+		{date && (
+			<div class="card-actions">
+				<span class="text-sm text-base-content/60">{formatDate(date)}</span>
+			</div>
+		)}
+	</div>
+</article>
+
