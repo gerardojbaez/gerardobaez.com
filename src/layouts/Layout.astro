@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
 import {defaultLang, getDictionary, languages, type Lang} from '../i18n/ui';
+import { Fathom } from "astro-fathom"
 
 interface Props {
     title?: string;
@@ -48,6 +49,7 @@ const normalizedLinks = Object.fromEntries(
     <meta name="generator" content={Astro.generator}/>
     <meta name="description" content={description}/>
     <title>{title}</title>
+    <Fathom site="PSMZQJDN" />
 </head>
 <body class="bg-base-200 text-base-content antialiased">
 <div class="relative mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
