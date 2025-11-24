@@ -5,6 +5,9 @@ const blog = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string().optional(),
+		urlSlug: z.string(),
+		lang: z.enum(['en', 'es']).default('en'),
+		translationKey: z.string(),
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
 		author: z.string().default('Gerardo Báez'),

@@ -1,16 +1,45 @@
 ---
 import '../styles/global.css';
+import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import { defaultLang, getDictionary, languages, type Lang } from '../i18n/ui';
 
 interface Props {
 	title?: string;
 	description?: string;
+	lang?: Lang;
+	alternateLinks?: Record<string, string>;
 }
 
-const { title = 'Gerardo Báez - Full Stack Web Developer', description = 'Full Stack Web Developer freelancer & software engineer based in Puerto Rico' } = Astro.props;
+const {
+	title: providedTitle,
+	description: providedDescription,
+	lang: langProp,
+	alternateLinks = {},
+} = Astro.props as Props;
+
+const lang = langProp ?? defaultLang;
+const dictionary = getDictionary(lang);
+
+const title = providedTitle ?? dictionary.siteTitle;
+const description = providedDescription ?? dictionary.siteDescription;
+
+const normalizedLinks = Object.fromEntries(
+	Object.keys(languages).map((code) => {
+		if (alternateLinks[code]) {
+			return [code, alternateLinks[code]];
+		}
+
+		if (code === lang) {
+			return [code, Astro.url.pathname];
+		}
+
+		return [code, `/${code}/`];
+	})
+);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,7 +48,15 @@ const { title = 'Gerardo Báez - Full Stack Web Developer', description = 'Full 
 		<meta name="description" content={description} />
 		<title>{title}</title>
 	</head>
-	<body>
+	<body class="bg-base-100 text-base-content">
+		<header class="border-b border-base-200">
+			<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+				<a href={`/${lang}/`} class="text-sm font-semibold tracking-tight">
+					{dictionary.heroName}
+				</a>
+				<LanguageSwitcher currentLang={lang} alternateLinks={normalizedLinks} />
+			</div>
+		</header>
 		<slot />
 	</body>
 </html>

@@ -1,0 +1,220 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import SocialLinks from '../../../components/SocialLinks.astro';
+import { defaultLang, getDictionary, languages, type Lang } from '../../../i18n/ui';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog', ({ data }) => !data.draft);
+
+	return posts.map((post) => {
+		const siblings = posts.filter(
+			(candidate) =>
+				candidate.slug !== post.slug &&
+				candidate.data.translationKey === post.data.translationKey
+		);
+
+		return {
+			params: {
+				lang: post.data.lang,
+				slug: post.data.urlSlug,
+			},
+			props: {
+				post,
+				translations: siblings,
+			},
+		};
+	});
+}
+
+type Props = {
+	post: CollectionEntry<'blog'>;
+	translations: CollectionEntry<'blog'>[];
+};
+
+const { post, translations } = Astro.props as Props;
+const { Content } = await post.render();
+
+const lang = (Astro.params.lang ?? defaultLang) as Lang;
+const dictionary = getDictionary(lang);
+
+const formattedDate = new Intl.DateTimeFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+}).format(post.data.pubDate);
+
+const updatedDate =
+	post.data.updatedDate &&
+	new Intl.DateTimeFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+	}).format(post.data.updatedDate);
+
+const alternateLinks = Object.fromEntries(
+	Object.keys(languages).map((code) => {
+		if (code === post.data.lang) {
+			return [code, `/${code}/blog/${post.data.urlSlug}/`];
+		}
+
+		const match = translations.find((entry) => entry.data.lang === code);
+
+		if (match) {
+			return [code, `/${code}/blog/${match.data.urlSlug}/`];
+		}
+
+		return [code, `/${code}/blog/`];
+	})
+);
+---
+
+<Layout
+	lang={lang}
+	title={`${post.data.title} - ${dictionary.heroName}`}
+	description={post.data.description || dictionary.siteDescription}
+	alternateLinks={alternateLinks}
+>
+	<main class="min-h-screen py-12">
+		<article class="mx-auto max-w-4xl px-4">
+			<header class="mb-8">
+				<h1 class="mb-4 text-4xl font-bold">{post.data.title}</h1>
+				<div class="mb-6 flex flex-wrap items-center gap-2 text-base-content/70">
+					<time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+					{updatedDate && (
+						<>
+							<span>•</span>
+							<time datetime={post.data.updatedDate?.toISOString()}>
+								{dictionary.updatedLabel} {updatedDate}
+							</time>
+						</>
+					)}
+					{post.data.author && (
+						<>
+							<span>•</span>
+							<span>
+								{dictionary.byLabel} {post.data.author}
+							</span>
+						</>
+					)}
+				</div>
+				{post.data.tags && post.data.tags.length > 0 && (
+					<div class="mb-6 flex flex-wrap gap-2">
+						{post.data.tags.map((tag) => (
+							<span class="badge badge-outline" data-key={tag}>
+								{tag}
+							</span>
+						))}
+					</div>
+				)}
+				{post.data.description && (
+					<p class="text-xl italic text-base-content/80">{post.data.description}</p>
+				)}
+			</header>
+
+			<div class="prose prose-lg max-w-none">
+				<Content />
+			</div>
+
+			<footer class="mt-12 border-t border-base-300 pt-8">
+				<div class="flex flex-col gap-4">
+					<p class="text-base-content/70">{dictionary.connectWithMe}</p>
+					<SocialLinks />
+				</div>
+			</footer>
+		</article>
+	</main>
+</Layout>
+
+<style>
+	:global(.prose) {
+		color: hsl(var(--bc));
+	}
+
+	:global(.prose h1),
+	:global(.prose h2),
+	:global(.prose h3),
+	:global(.prose h4) {
+		color: hsl(var(--bc));
+		font-weight: bold;
+		margin-top: 2em;
+		margin-bottom: 1em;
+	}
+
+	:global(.prose h1) {
+		font-size: 2.25em;
+	}
+
+	:global(.prose h2) {
+		font-size: 1.875em;
+	}
+
+	:global(.prose h3) {
+		font-size: 1.5em;
+	}
+
+	:global(.prose p) {
+		margin-bottom: 1.25em;
+		line-height: 1.75;
+	}
+
+	:global(.prose ul),
+	:global(.prose ol) {
+		margin-bottom: 1.25em;
+		padding-left: 1.625em;
+	}
+
+	:global(.prose li) {
+		margin-bottom: 0.5em;
+	}
+
+	:global(.prose code) {
+		background-color: hsl(var(--b2));
+		padding: 0.125em 0.375em;
+		border-radius: 0.25rem;
+		font-size: 0.875em;
+	}
+
+	:global(.prose pre) {
+		background-color: hsl(var(--b2));
+		padding: 1em;
+		border-radius: 0.5rem;
+		overflow-x: auto;
+		margin-bottom: 1.25em;
+		border: 1px solid hsl(var(--b3));
+	}
+
+	:global(.prose pre code) {
+		background-color: transparent;
+		padding: 0;
+		font-size: 0.875em;
+		line-height: 1.6;
+	}
+
+	:global(.prose pre code span) {
+		color: inherit;
+	}
+
+	:global(.prose a) {
+		color: hsl(var(--p));
+		text-decoration: underline;
+	}
+
+	:global(.prose a:hover) {
+		color: hsl(var(--pf));
+	}
+
+	:global(.prose blockquote) {
+		border-left: 4px solid hsl(var(--b3));
+		padding-left: 1em;
+		margin-left: 0;
+		font-style: italic;
+		color: hsl(var(--bc) / 0.8);
+	}
+
+	:global(.prose img) {
+		border-radius: 0.5rem;
+		margin: 1.5em 0;
+	}
+</style>
+

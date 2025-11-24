@@ -1,12 +1,15 @@
 ---
 title: "Stick to the default, where it makes sense"
 description: "This post discusses when it's best to stick with a framework's defaults and when it's important to go beyond them, using Laravel as an example. It highlights the benefits and limitations of default settings, examines scenarios where customization is necessary, and offers practical advice for balancing convention with project needs."
+urlSlug: "stick-to-the-default-where-it-makes-sense"
+lang: "en"
+translationKey: "stick-to-the-default"
 pubDate: 2025-11-24
 tags: ["Software Architecture"]
 draft: false
 ---
 
-"Stick to the default Team" is not a good advice. A better advice would be “Stick to the default, where it makes sense”. There are instances where it makes sense; most Laravel apps with one or two core features can and should definitely stick to the defaults, however, not without being intentional and pragmatic with those decisions. Also, if the app is B2C, most likely you can get away with those defaults. The same cannot be said for more complex projects with many moving parts. 
+"Stick to the default" is not a good advice. A better advice would be “Stick to the default, where it makes sense”. There are instances where it makes sense; most Laravel apps with one or two core features can and should definitely stick to the defaults, however, not without being intentional and pragmatic with those decisions. Also, if the app is B2C, most likely you can get away with those defaults. The same cannot be said for more complex projects with many moving parts. 
 
 While team expertise should be a factor when deciding technologies and architectures, it should not be the driving one...
 

@@ -3,22 +3,27 @@ interface Props {
 	title: string;
 	excerpt?: string;
 	date?: Date | string;
-	slug: string;
+	href: string;
+	locale?: string;
 }
 
-const { title, excerpt, date, slug } = Astro.props;
+const { title, excerpt, date, href, locale = 'en' } = Astro.props;
 
-const formatDate = (date: Date | string | undefined) => {
-	if (!date) return '';
-	const d = typeof date === 'string' ? new Date(date) : date;
-	return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const formatDate = (value: Date | string | undefined) => {
+	if (!value) return '';
+	const parsed = typeof value === 'string' ? new Date(value) : value;
+	return new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+	}).format(parsed);
 };
 ---
 
 <article class="card card-border">
 	<div class="card-body">
 		<h2 class="card-title">
-			<a href={`/blog/${slug}`} class="link link-hover">
+			<a href={href} class="link link-hover">
 				{title}
 			</a>
 		</h2>

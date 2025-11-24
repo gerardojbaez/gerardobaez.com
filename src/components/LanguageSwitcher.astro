@@ -1,0 +1,38 @@
+---
+import { languages, type Lang } from '../i18n/ui';
+
+interface Props {
+	currentLang: Lang;
+	alternateLinks?: Record<string, string>;
+}
+
+const { currentLang, alternateLinks = {} } = Astro.props;
+
+const links = Object.entries(languages).map(([code, label]) => {
+	const href =
+		code === currentLang
+			? Astro.url.pathname
+			: alternateLinks[code] ?? `/${code}/`;
+
+	return {
+		code,
+		label,
+		href,
+		isActive: code === currentLang,
+	};
+});
+---
+
+<nav class="flex items-center justify-end gap-2">
+	{links.map(({ code, label, href, isActive }) => (
+		<a
+			href={href}
+			aria-label={`Switch language to ${label}`}
+			aria-current={isActive ? 'page' : undefined}
+			class={`btn btn-xs btn-ghost ${isActive ? 'btn-active pointer-events-none' : ''}`}
+		>
+			{label}
+		</a>
+	))}
+</nav>
+

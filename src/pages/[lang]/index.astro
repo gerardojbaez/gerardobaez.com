@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import SocialLinks from '../../components/SocialLinks.astro';
+import BlogPostPreview from '../../components/BlogPostPreview.astro';
+import { defaultLang, getDictionary, languages, type Lang } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+	return Object.keys(languages).map((lang) => ({ params: { lang } }));
+}
+
+const avatarUrl = 'https://avatars.githubusercontent.com/u/11788389?v=4';
+
+const lang = (Astro.params.lang ?? defaultLang) as Lang;
+const dictionary = getDictionary(lang);
+
+const allBlogPosts = await getCollection('blog', ({ data }) => {
+	return !data.draft && data.lang === lang;
+});
+
+const latestPosts = allBlogPosts
+	.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+	.slice(0, 3);
+
+const alternateLinks = Object.fromEntries(
+	Object.keys(languages).map((code) => [code, `/${code}/`])
+);
+---
+
+<Layout lang={lang} alternateLinks={alternateLinks}>
+	<main class="min-h-screen py-12">
+		<div class="mx-auto flex max-w-4xl flex-col gap-16 px-4">
+			<section class="flex flex-col items-start gap-8 md:flex-row">
+				<div class="avatar">
+					<div class="w-32 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-2">
+						<img src={avatarUrl} alt={dictionary.heroName} />
+					</div>
+				</div>
+				<div class="flex-1">
+					<h1 class="mb-4 text-4xl font-bold">{dictionary.heroName}</h1>
+					<p class="mb-4 text-xl text-base-content/80">{dictionary.heroRole}</p>
+					<p class="mb-6 leading-relaxed text-base-content/70">{dictionary.heroBio}</p>
+					<SocialLinks />
+				</div>
+			</section>
+
+			<section>
+				<div class="mb-6 flex items-center justify-between gap-4">
+					<h2 class="text-2xl font-bold">{dictionary.latestPosts}</h2>
+					{latestPosts.length > 0 && (
+						<a href={`/${lang}/blog/`} class="link link-hover text-sm">
+							{dictionary.viewAll}
+						</a>
+					)}
+				</div>
+				<div class="space-y-4">
+					{latestPosts.length > 0 ? (
+						latestPosts.map((post) => (
+							<BlogPostPreview
+								title={post.data.title}
+								excerpt={post.data.description}
+								date={post.data.pubDate}
+								href={`/${lang}/blog/${post.data.urlSlug}/`}
+								locale={lang}
+							/>
+						))
+					) : (
+						<p class="italic text-base-content/60">{dictionary.emptyLatest}</p>
+					)}
+				</div>
+			</section>
+		</div>
+	</main>
+</Layout>
+
