@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import BlogPostPreview from '../../components/BlogPostPreview.astro';
+
+const allBlogPosts = await getCollection('blog', ({ data }) => {
+	return !data.draft;
+});
+
+const sortedPosts = allBlogPosts.sort((a, b) => 
+	b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+---
+
+<Layout title="Blog - Gerardo Báez" description="Thoughts and ideas on web development, freelancing, and technology">
+	<main class="min-h-screen py-12">
+		<div class="container mx-auto px-4 max-w-4xl">
+			<header class="mb-12">
+				<h1 class="text-4xl font-bold mb-4">Blog</h1>
+				<p class="text-base-content/70 text-lg">
+					Thoughts and ideas on web development, freelancing, and technology
+				</p>
+			</header>
+
+			<div class="space-y-6">
+				{sortedPosts.length > 0 ? (
+					sortedPosts.map((post) => (
+						<BlogPostPreview
+							title={post.data.title}
+							excerpt={post.data.description}
+							date={post.data.pubDate}
+							slug={post.slug}
+						/>
+					))
+				) : (
+					<p class="text-base-content/60 italic">No blog posts yet. Check back soon!</p>
+				)}
+			</div>
+		</div>
+	</main>
+</Layout>
+

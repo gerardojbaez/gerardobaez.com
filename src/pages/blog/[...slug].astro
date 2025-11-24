@@ -1,0 +1,178 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import SocialLinks from '../../components/SocialLinks.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+	const blogPosts = await getCollection('blog', ({ data }) => {
+		return !data.draft;
+	});
+
+	return blogPosts.map((post) => ({
+		params: { slug: post.slug },
+		props: { post },
+	}));
+}
+
+type Props = {
+	post: CollectionEntry<'blog'>;
+};
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout 
+	title={`${post.data.title} - Gerardo Báez`}
+	description={post.data.description || post.data.title}
+>
+	<main class="min-h-screen py-12">
+		<article class="container mx-auto px-4 max-w-4xl">
+			<header class="mb-8">
+				<h1 class="text-4xl font-bold mb-4">{post.data.title}</h1>
+				<div class="flex flex-wrap gap-4 items-center text-base-content/70 mb-6">
+					<time datetime={post.data.pubDate.toISOString()}>
+						{post.data.pubDate.toLocaleDateString('en-US', {
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+						})}
+					</time>
+					{post.data.updatedDate && (
+						<>
+							<span>•</span>
+							<time datetime={post.data.updatedDate.toISOString()}>
+								Updated {post.data.updatedDate.toLocaleDateString('en-US', {
+									year: 'numeric',
+									month: 'long',
+									day: 'numeric',
+								})}
+							</time>
+						</>
+					)}
+					{post.data.author && (
+						<>
+							<span>•</span>
+							<span>By {post.data.author}</span>
+						</>
+					)}
+				</div>
+				{post.data.tags && post.data.tags.length > 0 && (
+					<div class="flex flex-wrap gap-2 mb-6">
+						{post.data.tags.map((tag) => (
+							<span class="badge badge-outline">{tag}</span>
+						))}
+					</div>
+				)}
+				{post.data.description && (
+					<p class="text-xl text-base-content/80 italic">{post.data.description}</p>
+				)}
+			</header>
+
+			<div class="prose prose-lg max-w-none">
+				<Content />
+			</div>
+
+			<footer class="mt-12 pt-8 border-t border-base-300">
+				<div class="flex flex-col gap-4">
+					<p class="text-base-content/70">Connect with me:</p>
+					<SocialLinks />
+				</div>
+			</footer>
+		</article>
+	</main>
+</Layout>
+
+<style>
+	:global(.prose) {
+		color: hsl(var(--bc));
+	}
+
+	:global(.prose h1),
+	:global(.prose h2),
+	:global(.prose h3),
+	:global(.prose h4) {
+		color: hsl(var(--bc));
+		font-weight: bold;
+		margin-top: 2em;
+		margin-bottom: 1em;
+	}
+
+	:global(.prose h1) {
+		font-size: 2.25em;
+	}
+
+	:global(.prose h2) {
+		font-size: 1.875em;
+	}
+
+	:global(.prose h3) {
+		font-size: 1.5em;
+	}
+
+	:global(.prose p) {
+		margin-bottom: 1.25em;
+		line-height: 1.75;
+	}
+
+	:global(.prose ul),
+	:global(.prose ol) {
+		margin-bottom: 1.25em;
+		padding-left: 1.625em;
+	}
+
+	:global(.prose li) {
+		margin-bottom: 0.5em;
+	}
+
+	:global(.prose code) {
+		background-color: hsl(var(--b2));
+		padding: 0.125em 0.375em;
+		border-radius: 0.25rem;
+		font-size: 0.875em;
+	}
+
+	:global(.prose pre) {
+		background-color: hsl(var(--b2));
+		padding: 1em;
+		border-radius: 0.5rem;
+		overflow-x: auto;
+		margin-bottom: 1.25em;
+		border: 1px solid hsl(var(--b3));
+	}
+
+	:global(.prose pre code) {
+		background-color: transparent;
+		padding: 0;
+		font-size: 0.875em;
+		line-height: 1.6;
+	}
+
+	:global(.prose pre code span) {
+		color: inherit;
+	}
+
+	:global(.prose a) {
+		color: hsl(var(--p));
+		text-decoration: underline;
+	}
+
+	:global(.prose a:hover) {
+		color: hsl(var(--pf));
+	}
+
+	:global(.prose blockquote) {
+		border-left: 4px solid hsl(var(--b3));
+		padding-left: 1em;
+		margin-left: 0;
+		font-style: italic;
+		color: hsl(var(--bc) / 0.8);
+	}
+
+	:global(.prose img) {
+		border-radius: 0.5rem;
+		margin: 1.5em 0;
+	}
+</style>
+

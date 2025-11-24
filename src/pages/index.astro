@@ -2,8 +2,17 @@
 import Layout from '../layouts/Layout.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import BlogPostPreview from '../components/BlogPostPreview.astro';
+import { getCollection } from 'astro:content';
 
 const avatarUrl = 'https://avatars.githubusercontent.com/u/11788389?v=4';
+
+const allBlogPosts = await getCollection('blog', ({ data }) => {
+	return !data.draft;
+});
+
+const latestPosts = allBlogPosts
+	.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+	.slice(0, 3);
 ---
 
 <Layout>
@@ -33,10 +42,27 @@ const avatarUrl = 'https://avatars.githubusercontent.com/u/11788389?v=4';
 
 			<!-- Latest Blog Posts Section -->
 			<section>
-				<h2 class="text-2xl font-bold mb-6">Latest Posts</h2>
+				<div class="flex justify-between items-center mb-6">
+					<h2 class="text-2xl font-bold">Latest Posts</h2>
+					{latestPosts.length > 0 && (
+						<a href="/blog" class="link link-hover text-sm">
+							View all →
+						</a>
+					)}
+				</div>
 				<div class="space-y-4">
-					<!-- Placeholder for blog posts - will be populated later -->
-					<p class="text-base-content/60 italic">Blog posts coming soon...</p>
+					{latestPosts.length > 0 ? (
+						latestPosts.map((post) => (
+							<BlogPostPreview
+								title={post.data.title}
+								excerpt={post.data.description}
+								date={post.data.pubDate}
+								slug={post.slug}
+							/>
+						))
+					) : (
+						<p class="text-base-content/60 italic">Blog posts coming soon...</p>
+					)}
 				</div>
 			</section>
 		</div>
